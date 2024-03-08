@@ -8,14 +8,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
-{
+{   
+
+    public function get(){
+        $data = User::all();
+        return response()->json([
+            'students'=> $data,
+        ]);
+    }
+
     public function store(Request $request){
 
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'name' => 'required',
         ]);
- 
         if ($validator->fails()) {
             return response()->json([
                 'status'=>400,

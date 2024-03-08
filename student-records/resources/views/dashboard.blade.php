@@ -29,31 +29,100 @@
                     @include('modal_user_create')
                 </div>
             </div>
-            <table class="table border">
+            <table id="#student-table" class="table border">
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
-                        <th scope="col">Verified</th>
                         <th scope="col" style="width: 15%">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                        <td>
-                            <a class="btn btn-primary" href="">Update</a>
-                            <a class="btn btn-danger" href="">Delete</a>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
 
         </div>
     </body>
+<script>
+    $(document).ready(function(){
+
+        fetchStudent();
+
+        function fetchStudent()
+        {
+            $.ajax({
+                url: '/get_students',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    $('tbody').html("");
+                    $.each(response.students, function(key, item) {
+                        $('tbody').append(
+                        '<tr>\
+                                <td>'+item.id+'</td>\
+                                <td>'+item.name+'</td>\
+                                <td>'+item.email+'</td>\
+                                <td>\
+                                    <a id="'+item.id+'" class="btn btn-primary" href="">Update</a>\
+                                    <a id="'+item.id+'" class="btn btn-danger" href="">Delete</a>\
+                                </td>\
+                            </tr>\
+                        '
+                    );
+                });
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
         
+
+        // CREATE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        $(document).on('click' , '.add_student', function(e){
+            e.preventDefault();
+            
+            console.log("Adding data...");
+            
+            var data  = {
+                'email' : $('.email').val(),
+                'name' : $('.name').val(),
+            }
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        
+            $.ajax({  
+                type: "POST",
+                url: "/students",
+                data: data,
+                dataType: "json",
+                success: function (response){
+                    // console.log(response);
+                    if(response.status == 400)
+                    {
+                        $('#saveForm_errorList').html("");
+                        $.each(response.errors, function(key, error_values)
+                        {
+                            $('#saveForm_errorList').append('<div class="alert alert-danger alert-dismissible fade show">'+error_values+'<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">'+'</div>');
+                        });
+                    }
+                    else{
+                        $('#saveForm_errorList').append('<div class="alert alert-success alert-dismissible fade show">'+response.message+'<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">'+'</div>');
+                        // $.('#success_message').text(response.message)
+                        fetchStudent();
+                    }
+                }
+            });
+
+        }); 
+    })
+
+
+    
+</script>
 </html>
